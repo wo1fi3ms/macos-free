@@ -11,6 +11,16 @@ Swap:            0B          0B          0B
 
 ## Installation
 
+### Homebrew
+
+```bash
+brew install wo1fi3ms/tap/macos-free
+```
+
+The formula ([wo1fi3ms/homebrew-tap](https://github.com/wo1fi3ms/homebrew-tap))
+builds from the tagged source archive on your Mac and installs the `free`
+command and its man page. No prebuilt binary is downloaded.
+
 ### Prebuilt binary
 
 Download `free-macos-universal.tar.gz` from the
