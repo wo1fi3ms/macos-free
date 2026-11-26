@@ -11,6 +11,31 @@ Swap:            0B          0B          0B
 
 ## Installation
 
+### Prebuilt binary
+
+Download `free-<version>-macos-universal.tar.gz` from the
+[latest release](https://github.com/wo1fi3ms/macos-free/releases/latest).
+The binary is universal (Apple Silicon and Intel) and needs macOS 11 or later.
+
+```bash
+curl -LO https://github.com/wo1fi3ms/macos-free/releases/download/v1.0.0/free-1.0.0-macos-universal.tar.gz
+tar -xzf free-1.0.0-macos-universal.tar.gz
+cd free-1.0.0-macos-universal
+mkdir -p ~/.local/bin ~/.local/share/man/man1
+cp free ~/.local/bin/ && cp free.1 ~/.local/share/man/man1/
+```
+
+The binary is ad-hoc signed but not notarized. If you downloaded the archive
+with a web browser, macOS may refuse to run it; remove the quarantine flag once:
+
+```bash
+xattr -d com.apple.quarantine ~/.local/bin/free
+```
+
+### From source
+
+Requires the Xcode Command Line Tools (`xcode-select --install`).
+
 ```bash
 make
 make test
@@ -57,4 +82,4 @@ Make sure `$PREFIX/bin` is on your `PATH`.
 
 ## License
 
-No license has been chosen yet.
+[MIT](LICENSE)
