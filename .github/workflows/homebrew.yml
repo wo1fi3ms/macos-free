@@ -1,0 +1,92 @@
+# homebrew-tap'teki macos-free formülünü verilen etikete günceller.
+# Release iş akışı yayından sonra çağırır; elle de çalıştırılabilir.
+# Tap'e yalnızca o depoya yazabilen bir deploy key (TAP_DEPLOY_KEY) ile yazılır.
+#
+# Bumps the macos-free formula in homebrew-tap to the given tag.
+# Called by the release workflow after publishing; can also be run by hand.
+# Writes to the tap with a deploy key scoped to that repository (TAP_DEPLOY_KEY).
+name: homebrew
+
+on:
+  workflow_call:
+    inputs:
+      tag:
+        type: string
+        required: true
+    secrets:
+      TAP_DEPLOY_KEY:
+        required: true
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Release tag, e.g. v1.0.1"
+        type: string
+        required: true
+
+permissions: {}
+
+jobs:
+  bump-formula:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    # Tap'e aynı anda tek yazım / One write to the tap at a time
+    concurrency:
+      group: homebrew-tap
+      cancel-in-progress: false
+    permissions: {}
+    env:
+      TAG: ${{ inputs.tag }}
+      SOURCE_REPO: ${{ github.repository }}
+      FORMULA: Formula/macos-free.rb
+    steps:
+      - name: Check inputs
+        env:
+          HAS_KEY: ${{ secrets.TAP_DEPLOY_KEY != '' }}
+        run: |
+          if ! printf '%s' "$TAG" | grep -Eq '^v[0-9]+\.[0-9]+\.[0-9]+$'; then
+            echo "::error::Invalid tag: $TAG"
+            exit 1
+          fi
+          if [ "$HAS_KEY" != "true" ]; then
+            echo "::error::TAP_DEPLOY_KEY secret is not set"
+            exit 1
+          fi
+
+      # Formül bu arşivi indirir; özeti onunla aynı olmalı
+      # The formula downloads this archive; the checksum must match it
+      - name: Compute source checksum
+        id: source
+        run: |
+          url="https://github.com/$SOURCE_REPO/archive/refs/tags/$TAG.tar.gz"
+          sha=$(curl -fsSL "$url" | sha256sum | cut -d' ' -f1)
+          echo "url=$url" >> "$GITHUB_OUTPUT"
+          echo "sha=$sha" >> "$GITHUB_OUTPUT"
+          echo "$url $sha"
+
+      - name: Checkout tap
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: wo1fi3ms/homebrew-tap
+          ssh-key: ${{ secrets.TAP_DEPLOY_KEY }}
+          path: tap
+
+      - name: Update formula
+        working-directory: tap
+        env:
+          URL: ${{ steps.source.outputs.url }}
+          SHA: ${{ steps.source.outputs.sha }}
+        run: |
+          sed -i -E \
+            -e "s|^  url \".*\"$|  url \"$URL\"|" \
+            -e "s|^  sha256 \".*\"$|  sha256 \"$SHA\"|" \
+            "$FORMULA"
+          grep -E '^  (url|sha256) ' "$FORMULA"
+          if git diff --quiet; then
+            echo "Formula already at $TAG; nothing to do."
+            git push --dry-run origin HEAD
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -am "macos-free ${TAG#v}"
+          git push origin HEAD

@@ -94,3 +94,13 @@ jobs:
           gh release upload "$TAG" --repo "$REPO" \
             dist/free-macos-universal.tar.gz dist/free-macos-universal.tar.gz.sha256
           gh release edit "$TAG" --repo "$REPO" --draft=false
+
+  # Yayından sonra Homebrew formülünü güncelle / Bump the Homebrew formula after publishing
+  homebrew:
+    needs: release
+    permissions: {}
+    uses: ./.github/workflows/homebrew.yml
+    with:
+      tag: ${{ github.ref_name }}
+    secrets:
+      TAP_DEPLOY_KEY: ${{ secrets.TAP_DEPLOY_KEY }}
