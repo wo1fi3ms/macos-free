@@ -1,0 +1,89 @@
+.TH FREE 1 "Kasım 2026" "free 1.0.0" "Kullanıcı Komutları"
+.SH AD
+free \- boş ve kullanılan bellek miktarını gösterir (macOS)
+.SH KULLANIM
+.B free
+[\fIseçenekler\fR]
+.SH AÇIKLAMA
+.B free
+sistemdeki toplam, kullanılan ve boş fiziksel belleği ve takas alanını,
+Linux procps-ng \fBfree\fR(1) komutuyla aynı biçimde gösterir.
+Değerler Mach VM istatistiklerinden (\fBhost_statistics64\fR) ve
+\fBsysctl\fR (\fBhw.memsize\fR, \fBvm.swapusage\fR) değerlerinden okunur.
+.SS Sütunlar
+.TP
+.B total
+Fiziksel bellek (\fBhw.memsize\fR).
+.TP
+.B used
+total \- free \- buff/cache (Linux formülü).
+.TP
+.B free
+Boş sayfalar, spekülatif sayfalar hariç (\fBvm_stat\fR "Pages free").
+.TP
+.B shared
+macOS'ta karşılığı yoktur, her zaman 0.
+.TP
+.B buff/cache
+Dosya destekli ve temizlenebilir (purgeable) sayfalar.
+.TP
+.B available
+total \- (uygulama belleği + kablolu + sıkıştırılmış); Etkinlik Monitörü'ndeki
+"Kullanılan Bellek" değerinin tümleyeni.
+.SH SEÇENEKLER
+.TP
+.BR \-b ", " \-\-bytes
+Bayt cinsinden.
+.TP
+.BR \-k ", " \-\-kibi
+Kibibayt cinsinden (varsayılan).
+.TP
+.BR \-m ", " \-\-mebi
+Mebibayt cinsinden.
+.TP
+.BR \-g ", " \-\-gibi
+Gibibayt cinsinden.
+.TP
+.BR \-\-tebi ", " \-\-pebi
+Tebibayt / pebibayt cinsinden.
+.TP
+.BR \-\-kilo ", " \-\-mega ", " \-\-giga ", " \-\-tera ", " \-\-peta
+1000'lik katlarla.
+.TP
+.BR \-h ", " \-\-human
+İnsan okunur çıktı (B, Ki, Mi, Gi...).
+.TP
+.B \-\-si
+1024 yerine 1000'lik katlar kullan.
+.TP
+.BR \-w ", " \-\-wide
+buffers ve cache sütunlarını ayrı göster. macOS birleşik tampon önbelleği
+kullandığı için buffers her zaman 0'dır.
+.TP
+.BR \-t ", " \-\-total
+RAM ve takas toplamını gösteren satırı ekle.
+.TP
+.BR \-L ", " \-\-line
+Tek satırlık özet.
+.TP
+.BR \-d ", " \-\-detail
+macOS'a özgü döküm: app, wired, compressed, file-backed, purgeable, speculative.
+.TP
+.BR \-s ", " \-\-seconds " \fIN\fR"
+Her \fIN\fR saniyede bir yenile (ondalık olabilir).
+.TP
+.BR \-c ", " \-\-count " \fIN\fR"
+\fIN\fR kez yenile ve çık.
+.TP
+.B \-\-help
+Yardımı göster.
+.TP
+.BR \-V ", " \-\-version
+Sürüm bilgisini göster.
+.SH NOTLAR
+\fB\-l\fR/\fB\-\-lohi\fR ve \fB\-v\fR/\fB\-\-committed\fR Linux'a özgüdür
+ve macOS'ta desteklenmez.
+.SH AYRICA BAKINIZ
+.BR vm_stat (1),
+.BR sysctl (8),
+.BR memory_pressure (1)
