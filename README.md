@@ -13,17 +13,30 @@ Swap:            0B          0B          0B
 
 ### Prebuilt binary
 
-Download `free-<version>-macos-universal.tar.gz` from the
+Download `free-macos-universal.tar.gz` from the
 [latest release](https://github.com/wo1fi3ms/macos-free/releases/latest).
 The binary is universal (Apple Silicon and Intel) and needs macOS 11 or later.
 
 ```bash
-curl -LO https://github.com/wo1fi3ms/macos-free/releases/download/v1.0.0/free-1.0.0-macos-universal.tar.gz
-tar -xzf free-1.0.0-macos-universal.tar.gz
-cd free-1.0.0-macos-universal
+curl -LO https://github.com/wo1fi3ms/macos-free/releases/latest/download/free-macos-universal.tar.gz
+gh attestation verify free-macos-universal.tar.gz --repo wo1fi3ms/macos-free
+tar -xzf free-macos-universal.tar.gz
 mkdir -p ~/.local/bin ~/.local/share/man/man1
-cp free ~/.local/bin/ && cp free.1 ~/.local/share/man/man1/
+cp free-macos-universal/free ~/.local/bin/ && cp free-macos-universal/free.1 ~/.local/share/man/man1/
 ```
+
+#### Verifying the binary
+
+Release binaries are never uploaded by hand. A GitHub Actions workflow
+([`release.yml`](.github/workflows/release.yml)) builds them from the tagged
+commit and signs a [build provenance attestation](https://docs.github.com/en/actions/security-for-github-actions/using-artifact-attestations)
+with Sigstore. `gh attestation verify` (GitHub CLI) checks that the archive was
+built by that workflow in this repository; it fails for any file built
+elsewhere. Releases are immutable: once published, their files and tag cannot
+be changed.
+
+If you do not want to trust any prebuilt binary, build from source (below);
+it is a single C file.
 
 The binary is ad-hoc signed but not notarized. If you downloaded the archive
 with a web browser, macOS may refuse to run it; remove the quarantine flag once:

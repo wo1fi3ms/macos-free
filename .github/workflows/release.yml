@@ -1,0 +1,96 @@
+# Sürüm etiketi push edilince binary'yi derler, derleme kanıtı (attestation)
+# üretir ve GitHub release'ini yayınlar. Release'e elle binary yüklenmez.
+#
+# On a version tag push: builds the binary, creates a build provenance
+# attestation and publishes the GitHub release. Never upload binaries by hand.
+name: release
+
+on:
+  push:
+    tags: ["v*"]
+
+# Aynı etiket için tek koşu / One run per tag
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions: {}
+
+jobs:
+  release:
+    runs-on: macos-latest
+    timeout-minutes: 15
+    permissions:
+      contents: write          # release oluşturma / create the release
+      id-token: write          # Sigstore imzası için OIDC / OIDC for Sigstore signing
+      attestations: write      # kanıtı kaydetme / store the attestation
+      artifact-metadata: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      # Etiket ile free.c içindeki sürüm aynı olmalı
+      # The tag must match the version in free.c
+      - name: Check version
+        env:
+          TAG: ${{ github.ref_name }}
+        run: |
+          version=$(sed -n 's/^#define FREE_VERSION "\(.*\)"/\1/p' free.c)
+          if [ "v$version" != "$TAG" ]; then
+            echo "::error::Tag $TAG does not match FREE_VERSION $version"
+            exit 1
+          fi
+
+      - name: Test
+        run: make test
+
+      - name: Build release archive
+        run: |
+          make release
+          lipo -archs dist/free-macos-universal/free
+          cat dist/free-macos-universal.tar.gz.sha256
+
+      - name: Attest build provenance
+        uses: actions/attest@1e69f48acb82d1966a394da916b4c1698aa569d6 # v4.2.2
+        with:
+          subject-path: |
+            dist/free-macos-universal.tar.gz
+            dist/free-macos-universal/free
+
+      # Değiştirilemez release'lerde dosyalar taslak aşamasında eklenmeli
+      # With immutable releases, assets must be attached while still a draft
+      - name: Publish release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ github.ref_name }}
+          REPO: ${{ github.repository }}
+        run: |
+          sha=$(cut -d' ' -f1 dist/free-macos-universal.tar.gz.sha256)
+          toolchain=$(xcrun clang --version | head -1)
+          sdk=$(xcrun --show-sdk-version)
+          {
+            echo "Universal binary (Apple Silicon + Intel, macOS 11+), built by GitHub Actions from \`$TAG\`."
+            echo
+            echo "## Install"
+            echo
+            echo '```bash'
+            echo "curl -LO https://github.com/$REPO/releases/download/$TAG/free-macos-universal.tar.gz"
+            echo "gh attestation verify free-macos-universal.tar.gz --repo $REPO"
+            echo "tar -xzf free-macos-universal.tar.gz"
+            echo "mkdir -p ~/.local/bin ~/.local/share/man/man1"
+            echo "cp free-macos-universal/free ~/.local/bin/ && cp free-macos-universal/free.1 ~/.local/share/man/man1/"
+            echo '```'
+            echo
+            echo "## Build details"
+            echo
+            echo "- SHA-256: \`$sha\`"
+            echo "- Toolchain: $toolchain, macOS SDK $sdk"
+            echo "- Provenance: https://github.com/$REPO/attestations"
+          } > notes.md
+          gh release create "$TAG" --repo "$REPO" --verify-tag --draft \
+            --title "$TAG" --notes-file notes.md
+          gh release upload "$TAG" --repo "$REPO" \
+            dist/free-macos-universal.tar.gz dist/free-macos-universal.tar.gz.sha256
+          gh release edit "$TAG" --repo "$REPO" --draft=false

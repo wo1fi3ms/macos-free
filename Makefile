@@ -5,8 +5,7 @@ CFLAGS  ?= -O2 -Wall -Wextra -Wpedantic -std=c11
 PREFIX  ?= /usr/local
 BINDIR  := $(PREFIX)/bin
 MANDIR  := $(PREFIX)/share/man/man1
-VERSION := $(shell sed -n 's/^\#define FREE_VERSION "\(.*\)"/\1/p' free.c)
-DIST    := free-$(VERSION)-macos-universal
+DIST    := free-macos-universal
 # Hem Apple Silicon hem Intel için tek binary / One binary for both Apple Silicon and Intel
 RELEASE_FLAGS := -arch arm64 -arch x86_64 -mmacosx-version-min=11.0
 

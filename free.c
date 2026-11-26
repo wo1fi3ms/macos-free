@@ -22,7 +22,7 @@
 #include <mach/mach.h>
 #include <mach/mach_host.h>
 
-#define FREE_VERSION "1.0.0"
+#define FREE_VERSION "1.0.1"
 
 /* Bellek ve takas değerleri, bayt cinsinden / Memory and swap figures, in bytes */
 struct mem_info {
