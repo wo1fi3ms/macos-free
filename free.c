@@ -71,7 +71,7 @@ static int read_mem_info(struct mem_info *mi)
     uint64_t memsize = 0;
     size_t len = sizeof(memsize);
     if (sysctlbyname("hw.memsize", &memsize, &len, NULL, 0) != 0) {
-        fprintf(stderr, "%s: hw.memsize okunamadı: %s\n", prog, strerror(errno));
+        fprintf(stderr, "%s: cannot read hw.memsize: %s\n", prog, strerror(errno));
         return -1;
     }
 
@@ -85,7 +85,7 @@ static int read_mem_info(struct mem_info *mi)
     kern_return_t kr = host_statistics64(host, HOST_VM_INFO64, (host_info64_t)&vm, &cnt);
     mach_port_deallocate(mach_task_self(), host);
     if (kr != KERN_SUCCESS) {
-        fprintf(stderr, "%s: host_statistics64 başarısız: %s\n", prog, mach_error_string(kr));
+        fprintf(stderr, "%s: host_statistics64 failed: %s\n", prog, mach_error_string(kr));
         return -1;
     }
 
@@ -248,34 +248,34 @@ static void print_table(const struct mem_info *mi, const struct options *o)
 static void usage(FILE *out)
 {
     fprintf(out,
-        "\nKullanım / Usage:\n"
-        " %s [seçenekler / options]\n"
+        "\nUsage:\n"
+        " %s [options]\n"
         "\n"
-        "Seçenekler / Options:\n"
-        " -b, --bytes         çıktıyı bayt olarak göster\n"
-        "     --kilo          çıktıyı kilobayt olarak göster\n"
-        "     --mega          çıktıyı megabayt olarak göster\n"
-        "     --giga          çıktıyı gigabayt olarak göster\n"
-        "     --tera          çıktıyı terabayt olarak göster\n"
-        "     --peta          çıktıyı petabayt olarak göster\n"
-        " -k, --kibi          çıktıyı kibibayt olarak göster (varsayılan)\n"
-        " -m, --mebi          çıktıyı mebibayt olarak göster\n"
-        " -g, --gibi          çıktıyı gibibayt olarak göster\n"
-        "     --tebi          çıktıyı tebibayt olarak göster\n"
-        "     --pebi          çıktıyı pebibayt olarak göster\n"
-        " -h, --human         insan okunur çıktı\n"
-        "     --si            1024 yerine 1000'lik katlar kullan\n"
-        " -w, --wide          geniş çıktı (buffers ve cache ayrı)\n"
-        " -t, --total         RAM + takas toplamını göster\n"
-        " -L, --line          tek satırlık özet\n"
-        " -d, --detail        macOS bellek dökümünü göster (app, wired, compressed...)\n"
-        " -s N, --seconds N   her N saniyede bir yenile\n"
-        " -c N, --count N     N kez yenile ve çık\n"
+        "Options:\n"
+        " -b, --bytes         show output in bytes\n"
+        "     --kilo          show output in kilobytes\n"
+        "     --mega          show output in megabytes\n"
+        "     --giga          show output in gigabytes\n"
+        "     --tera          show output in terabytes\n"
+        "     --peta          show output in petabytes\n"
+        " -k, --kibi          show output in kibibytes (default)\n"
+        " -m, --mebi          show output in mebibytes\n"
+        " -g, --gibi          show output in gibibytes\n"
+        "     --tebi          show output in tebibytes\n"
+        "     --pebi          show output in pebibytes\n"
+        " -h, --human         show human-readable output\n"
+        "     --si            use powers of 1000 instead of 1024\n"
+        " -w, --wide          wide output (separate buffers and cache)\n"
+        " -t, --total         show total for RAM + swap\n"
+        " -L, --line          show output on a single line\n"
+        " -d, --detail        show macOS memory breakdown (app, wired, compressed...)\n"
+        " -s N, --seconds N   repeat printing every N seconds\n"
+        " -c N, --count N     repeat printing N times, then exit\n"
         "\n"
-        "     --help          bu yardımı göster ve çık\n"
-        " -V, --version       sürüm bilgisini göster ve çık\n"
+        "     --help          display this help and exit\n"
+        " -V, --version       output version information and exit\n"
         "\n"
-        "Not: -l/--lohi ve -v/--committed Linux'a özgüdür, macOS'ta desteklenmez.\n",
+        "Note: -l/--lohi and -v/--committed are Linux-specific and not supported on macOS.\n",
         prog);
 }
 
@@ -379,21 +379,21 @@ int main(int argc, char **argv)
         case 'd': o.detail = 1; break;
         case 's':
             if (parse_double(optarg, &o.seconds) != 0) {
-                fprintf(stderr, "%s: geçersiz saniye değeri: %s\n", prog, optarg);
+                fprintf(stderr, "%s: invalid seconds value: %s\n", prog, optarg);
                 return 1;
             }
             o.repeat = 1;
             break;
         case 'c':
             if (parse_long(optarg, &o.count) != 0) {
-                fprintf(stderr, "%s: geçersiz sayı: %s\n", prog, optarg);
+                fprintf(stderr, "%s: invalid count: %s\n", prog, optarg);
                 return 1;
             }
             o.repeat = 1;
             break;
         case 'l':
         case 'v':
-            fprintf(stderr, "%s: -%c seçeneği Linux'a özgüdür, macOS'ta desteklenmez\n", prog, c);
+            fprintf(stderr, "%s: option -%c is Linux-specific and not supported on macOS\n", prog, c);
             return 1;
         case OPT_HELP:
             usage(stdout);
@@ -407,7 +407,7 @@ int main(int argc, char **argv)
         }
     }
     if (optind < argc) {
-        fprintf(stderr, "%s: beklenmeyen argüman: %s\n", prog, argv[optind]);
+        fprintf(stderr, "%s: unexpected argument: %s\n", prog, argv[optind]);
         usage(stderr);
         return 1;
     }

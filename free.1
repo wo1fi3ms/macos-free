@@ -1,89 +1,90 @@
-.TH FREE 1 "Kasım 2026" "free 1.0.0" "Kullanıcı Komutları"
-.SH AD
-free \- boş ve kullanılan bellek miktarını gösterir (macOS)
-.SH KULLANIM
+.TH FREE 1 "November 2026" "free 1.0.0" "User Commands"
+.SH NAME
+free \- display the amount of free and used memory (macOS)
+.SH SYNOPSIS
 .B free
-[\fIseçenekler\fR]
-.SH AÇIKLAMA
+[\fIoptions\fR]
+.SH DESCRIPTION
 .B free
-sistemdeki toplam, kullanılan ve boş fiziksel belleği ve takas alanını,
-Linux procps-ng \fBfree\fR(1) komutuyla aynı biçimde gösterir.
-Değerler Mach VM istatistiklerinden (\fBhost_statistics64\fR) ve
-\fBsysctl\fR (\fBhw.memsize\fR, \fBvm.swapusage\fR) değerlerinden okunur.
-.SS Sütunlar
+shows the total, used and free physical memory and swap space, in the same
+format as the Linux procps-ng \fBfree\fR(1) command.
+Values are read from Mach VM statistics (\fBhost_statistics64\fR) and from
+\fBsysctl\fR (\fBhw.memsize\fR, \fBvm.swapusage\fR).
+.SS Columns
 .TP
 .B total
-Fiziksel bellek (\fBhw.memsize\fR).
+Physical memory (\fBhw.memsize\fR).
 .TP
 .B used
-total \- free \- buff/cache (Linux formülü).
+total \- free \- buff/cache (the Linux formula).
 .TP
 .B free
-Boş sayfalar, spekülatif sayfalar hariç (\fBvm_stat\fR "Pages free").
+Free pages, excluding speculative pages (\fBvm_stat\fR "Pages free").
 .TP
 .B shared
-macOS'ta karşılığı yoktur, her zaman 0.
+No macOS equivalent; always 0.
 .TP
 .B buff/cache
-Dosya destekli ve temizlenebilir (purgeable) sayfalar.
+File-backed and purgeable pages.
 .TP
 .B available
-total \- (uygulama belleği + kablolu + sıkıştırılmış); Etkinlik Monitörü'ndeki
-"Kullanılan Bellek" değerinin tümleyeni.
-.SH SEÇENEKLER
+total \- (app memory + wired + compressed); the complement of Activity
+Monitor's "Memory Used".
+.SH OPTIONS
 .TP
 .BR \-b ", " \-\-bytes
-Bayt cinsinden.
+Display in bytes.
 .TP
 .BR \-k ", " \-\-kibi
-Kibibayt cinsinden (varsayılan).
+Display in kibibytes (default).
 .TP
 .BR \-m ", " \-\-mebi
-Mebibayt cinsinden.
+Display in mebibytes.
 .TP
 .BR \-g ", " \-\-gibi
-Gibibayt cinsinden.
+Display in gibibytes.
 .TP
 .BR \-\-tebi ", " \-\-pebi
-Tebibayt / pebibayt cinsinden.
+Display in tebibytes / pebibytes.
 .TP
 .BR \-\-kilo ", " \-\-mega ", " \-\-giga ", " \-\-tera ", " \-\-peta
-1000'lik katlarla.
+Display in powers of 1000.
 .TP
 .BR \-h ", " \-\-human
-İnsan okunur çıktı (B, Ki, Mi, Gi...).
+Human-readable output (B, Ki, Mi, Gi...).
 .TP
 .B \-\-si
-1024 yerine 1000'lik katlar kullan.
+Use powers of 1000 instead of 1024.
 .TP
 .BR \-w ", " \-\-wide
-buffers ve cache sütunlarını ayrı göster. macOS birleşik tampon önbelleği
-kullandığı için buffers her zaman 0'dır.
+Show buffers and cache in separate columns. macOS uses a unified buffer
+cache, so buffers is always 0.
 .TP
 .BR \-t ", " \-\-total
-RAM ve takas toplamını gösteren satırı ekle.
+Add a line with RAM + swap totals.
 .TP
 .BR \-L ", " \-\-line
-Tek satırlık özet.
+One-line summary.
 .TP
 .BR \-d ", " \-\-detail
-macOS'a özgü döküm: app, wired, compressed, file-backed, purgeable, speculative.
+macOS-specific breakdown: app, wired, compressed, file-backed, purgeable,
+speculative.
 .TP
 .BR \-s ", " \-\-seconds " \fIN\fR"
-Her \fIN\fR saniyede bir yenile (ondalık olabilir).
+Refresh every \fIN\fR seconds (fractions allowed).
 .TP
 .BR \-c ", " \-\-count " \fIN\fR"
-\fIN\fR kez yenile ve çık.
+Refresh \fIN\fR times, then exit.
 .TP
 .B \-\-help
-Yardımı göster.
+Display help and exit.
 .TP
 .BR \-V ", " \-\-version
-Sürüm bilgisini göster.
-.SH NOTLAR
-\fB\-l\fR/\fB\-\-lohi\fR ve \fB\-v\fR/\fB\-\-committed\fR Linux'a özgüdür
-ve macOS'ta desteklenmez.
-.SH AYRICA BAKINIZ
+Display version information and exit.
+.SH NOTES
+\fB\-l\fR/\fB\-\-lohi\fR and \fB\-v\fR/\fB\-\-committed\fR are Linux-specific
+and are not supported on macOS.
+.SH SEE ALSO
 .BR vm_stat (1),
 .BR sysctl (8),
 .BR memory_pressure (1)

@@ -1,6 +1,6 @@
 # free (macOS)
 
-Linux'taki `free` (procps-ng) komutunun macOS için yeniden yazımı. Tek dosyalık C programı, ek bağımlılık yok.
+A macOS reimplementation of the Linux `free` command (procps-ng). A single C file with no dependencies.
 
 ```
 $ free -h
@@ -9,42 +9,52 @@ Mem:           64Gi        45Gi       2.4Gi          0B        17Gi        20Gi
 Swap:            0B          0B          0B
 ```
 
-## Kurulum
+## Installation
 
 ```bash
 make
 make test
-sudo make install          # /usr/local/bin/free ve man sayfası
+sudo make install          # installs /usr/local/bin/free and the man page
 ```
 
-Başka bir yere kurmak için: `make install PREFIX=$HOME/.local`
+To install without `sudo`, for example into `~/.local`:
 
-## Seçenekler
+```bash
+make install PREFIX=$HOME/.local
+```
 
-| Seçenek | Açıklama |
+Make sure `$PREFIX/bin` is on your `PATH`.
+
+## Options
+
+| Option | Description |
 |---|---|
-| `-b`, `-k`, `-m`, `-g`, `--tebi`, `--pebi` | Bayt / KiB (varsayılan) / MiB / GiB / TiB / PiB |
-| `--kilo`, `--mega`, `--giga`, `--tera`, `--peta` | 1000'lik birimler |
-| `-h`, `--human` | İnsan okunur çıktı |
-| `--si` | 1024 yerine 1000'lik katlar |
-| `-w`, `--wide` | buffers ve cache ayrı sütunlarda |
-| `-t`, `--total` | RAM + takas toplam satırı |
-| `-L`, `--line` | Tek satırlık özet |
-| `-d`, `--detail` | macOS dökümü: app, wired, compressed, file-backed, purgeable, speculative |
-| `-s N`, `-c N` | N saniyede bir yenile / N kez yenile |
-| `--help`, `-V` | Yardım / sürüm |
+| `-b`, `-k`, `-m`, `-g`, `--tebi`, `--pebi` | Bytes / KiB (default) / MiB / GiB / TiB / PiB |
+| `--kilo`, `--mega`, `--giga`, `--tera`, `--peta` | Powers of 1000 |
+| `-h`, `--human` | Human-readable output |
+| `--si` | Use powers of 1000 instead of 1024 |
+| `-w`, `--wide` | Show buffers and cache in separate columns |
+| `-t`, `--total` | Add a RAM + swap total line |
+| `-L`, `--line` | One-line summary |
+| `-d`, `--detail` | macOS breakdown: app, wired, compressed, file-backed, purgeable, speculative |
+| `-s N`, `-c N` | Refresh every N seconds / repeat N times |
+| `--help`, `-V` | Help / version |
 
-`-l` ve `-v` Linux'a özgüdür, macOS'ta hata verir.
+`-l` and `-v` are Linux-specific and exit with an error on macOS.
 
-## Sütunların macOS karşılıkları
+## How the columns map to macOS
 
-| Sütun | Kaynak |
+| Column | Source |
 |---|---|
 | total | `sysctl hw.memsize` |
-| free | boş sayfalar, spekülatif hariç (`vm_stat` "Pages free") |
-| buff/cache | dosya destekli + purgeable sayfalar (Etkinlik Monitörü "Önbelleğe Alınmış Dosyalar") |
-| used | total − free − buff/cache (Linux formülü) |
-| available | total − (app + wired + compressed), yani Etkinlik Monitörü "Kullanılan Bellek" değerinin tümleyeni |
-| shared | macOS'ta karşılığı yok, 0 |
-| buffers (`-w`) | macOS birleşik tampon önbelleği kullanır, 0 |
+| free | free pages, excluding speculative ones (`vm_stat` "Pages free") |
+| buff/cache | file-backed + purgeable pages (Activity Monitor "Cached Files") |
+| used | total − free − buff/cache (the Linux formula) |
+| available | total − (app + wired + compressed), the complement of Activity Monitor's "Memory Used" |
+| shared | no macOS equivalent, always 0 |
+| buffers (`-w`) | macOS uses a unified buffer cache, always 0 |
 | Swap | `sysctl vm.swapusage` |
+
+## License
+
+No license has been chosen yet.
